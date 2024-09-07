@@ -1,0 +1,30 @@
+name: Create PR
+on:
+  workflow_dispatch:
+    inputs:
+      owner:
+        description: "Owner"
+        required: true
+      username:
+        description: "Username"
+        required: true
+      forkName:
+        description: "Fork Name"
+        required: true
+jobs:
+  verify:
+    name: Submit PR
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check fork
+        if: github.event.repository.fork == true
+        run: |
+          echo "This workflow must run on the parent repository"
+          exit 1
+      - name: open-pull-request
+        uses: fjogeleit/http-request-action@v1
+        with:
+          url: "https://api.github.com/repos/${{ inputs.username }}/${{ inputs.forkName }}/pulls"
+          method: "POST"
+          customHeaders: '{"Accept": "application/vnd.github+json", "Authorization": "Bearer ${{ secrets.USER_PAT }}", "X-GitHub-Api-Version":"2022-11-28"}'
+          data: '{ "title":"Step 2", "body":"##Nova Corps Employee Registration\n\nReview PR for further details.", "head":"${{ inputs.owner }}:${{ inputs.username }}", "base":"main" }'

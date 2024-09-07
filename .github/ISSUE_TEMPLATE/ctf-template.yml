@@ -1,0 +1,15 @@
+name: Employee Registration
+description: Complete your registration to get access to the Nova Corps database.
+title: "[NC] Employee Registration"
+labels: []
+assignees: []
+body:
+  - type: input
+    id: username
+    attributes:
+      label: Username
+      description: "Please enter your Nova Corps username"
+      placeholder: "CTFUser"
+    validations:
+      required: true
+

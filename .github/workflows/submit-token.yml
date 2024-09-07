@@ -1,0 +1,41 @@
+name: Submit Employee Verification
+on:
+  workflow_dispatch:
+    inputs:
+      username:
+        description: "Nova Corps Username"
+        required: true
+      verificationCode:
+        description: "Token"
+        required: true
+jobs:
+  verify:
+    name: Submit Verification
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check fork
+        if: github.event.repository.fork == false
+        run: |
+          echo "This workflow must run on your fork"
+          exit 1
+
+      - name: Mask Input
+        id: add_mask
+        run: |
+          VERIFICATION_CODE=$(jq -r '.inputs.verificationCode' $GITHUB_EVENT_PATH)
+          echo ::add-mask::$VERIFICATION_CODE
+          echo SECRET_CODE="$VERIFICATION_CODE" >> $GITHUB_ENV
+
+      - name: Submit Verification
+        id: verification
+        uses: fjogeleit/http-request-action@v1
+        with:
+          url: "https://engine.rewst.io/webhooks/custom/trigger/0190fba7-081e-742e-a14a-c42dacfac02c/019017b6-72c5-751d-8e29-d354b64e3420"
+          method: "POST"
+          customHeaders: '{"Content-Type": "application/json", "x-rewst-secret": "Tributary-Flashbulb-Shaky" }'
+          data: '{ "username": "${{ inputs.username }}", "token": "${{ env.SECRET_CODE }}", "ghuser": "${{ github.event.sender.id }}" }'
+          timeout: 30000
+
+      - name: Submission Response
+        run: |
+          echo ${{ fromJson(steps.verification.outputs.response).response }} >> $GITHUB_STEP_SUMMARY
